@@ -13,7 +13,7 @@ import argparse, sys
 
 
 Argparser = argparse.ArgumentParser()
-Argparser.add_argument('-v', help=' : set for visualize clustering (1 or 0)',  choices=[0, 1], default=1, type=int)
+Argparser.add_argument('-v', help=' : set for visualize analysis and clustering (1 or 0)',  choices=[0, 1], default=1, type=int)
 Argparser.add_argument('-m', help=' : set for training machielearning model (1 or 0)', choices=[0, 1], default=1, type=int)
 args = Argparser.parse_args()
 
@@ -28,7 +28,6 @@ scaler = StandardScaler()
 PCA_Data = pd.DataFrame(pca.fit_transform(scaler.fit_transform(pd.concat([X, Y], axis=1))))
 
 PCA_Data.columns = ['pca1', 'pca2']
-PCA_Data
 
 # 엘보우 메서드
 def elbow_method(data, max_clusters=10):
@@ -48,12 +47,13 @@ def determine_clusters(data, max_clusters=10):
     plt.title('Elbow Method')
     plt.show()
 
-# 엘보우 메소드 실행
-determine_clusters(PCA_Data)
-PCA_Data.plot.scatter(x='pca1', y='pca2')
+
 
 
 if args.v:
+    # 엘보우 메소드 실행
+    determine_clusters(PCA_Data)
+    PCA_Data.plot.scatter(x='pca1', y='pca2')
     #clustering 시각화
     # KMeans
     kmeans_4 = KMeans(n_init=20, n_clusters=5, init='k-means++', random_state=42)
@@ -87,29 +87,34 @@ if args.v:
     sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
     plt.title('BIRCH')
     plt.show()
+    
+    X['cluster'] = PCA_Data['birchC']
+    total_data = pd.concat([X, Y], axis=1)
+
+    # BIRCH cluster 3, 4 분석
+    plt.figure(figsize=(12, 8))
+    for i in range(8):
+        plt.subplot(2, 4, i+1)
+        plt.hist(total_data[total_data['cluster'] == 4][total_data.columns[i]], bins=10)
+        plt.title(total_data.columns[i])
+    plt.show()
+
+    plt.figure(figsize=(12, 8))
+    for i in range(8):
+        plt.subplot(2, 4, i+1)
+        plt.hist(total_data[total_data['cluster'] == 3][total_data.columns[i]], bins=10)
+        plt.title(total_data.columns[i])
+    plt.show()
+
+
 
 else:
     birchmodel = Birch(n_clusters=5)
     birchmodel.fit((PCA_Data[['pca1', 'pca2']].copy()))
     PCA_Data['birchC'] = birchmodel.fit_predict(PCA_Data[['pca1', 'pca2']].copy())
 
-X['cluster'] = PCA_Data['birchC']
-total_data = pd.concat([X, Y], axis=1)
-
-# BIRCH cluster 3, 4 분석
-plt.figure(figsize=(12, 8))
-for i in range(8):
-    plt.subplot(2, 4, i+1)
-    plt.hist(total_data[total_data['cluster'] == 4][total_data.columns[i]], bins=10)
-    plt.title(total_data.columns[i])
-plt.show()
-
-plt.figure(figsize=(12, 8))
-for i in range(8):
-    plt.subplot(2, 4, i+1)
-    plt.hist(total_data[total_data['cluster'] == 3][total_data.columns[i]], bins=10)
-    plt.title(total_data.columns[i])
-plt.show()
+    X['cluster'] = PCA_Data['birchC']
+    total_data = pd.concat([X, Y], axis=1)
 
 
 
