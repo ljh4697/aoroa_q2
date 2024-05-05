@@ -1,4 +1,6 @@
+catboost==1.0.6
 holidays==0.47
+lightgbm==3.3.2
 matplotlib==3.7.5
 numpy==1.23.0
 pandas==1.2.5
